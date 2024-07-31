@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <form method="POST" action="{{ url_for('handle_search') }}" enctype="multipart/form-data">
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" name="query" id="query" placeholder="Enter your search query" value="{{ query }}" autofocus>
+        </div>
+
+        <div class="input-group mb-3">
+            <input type="file" name="file" class="form-control" id="image_query" aria-describedby="image_query_addon" aria-label="Upload">
+            <button class="btn btn-outline-secondary" type="submit" id="image_query_addon">Submit</button>
+          </div>
+    </form>
+
+    {% if filename %}
+        <h2>Uploaded Image:</h2>
+        <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Uploaded Image">
+    {% elif query %}
+        <p>{{ query }}</p>
+    {% endif %}
+{% endblock %}
