@@ -1,9 +1,13 @@
 from flask import Flask, request, render_template, redirect, url_for
 from PIL import Image
 import os
+from search import Search
+import click
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/uploads/'
+
+es = Search()
 
 @app.get('/')
 def index():
@@ -43,3 +47,23 @@ if __name__ == '__main__':
     if not os.path.exists(app.config['UPLOAD_FOLDER']):
         os.makedirs(app.config['UPLOAD_FOLDER'])
     app.run(debug=True)
+
+@app.cli.command()
+def reindex():
+    """Regenerate the Elasticsearch index."""
+    response = es.reindex()
+    print (response)
+    print(f'Index with {len(response["items"])} documents created '
+          f'in {response["took"]} milliseconds.')
+
+@app.cli.command()
+@click.argument("query")
+def test_embed(query):
+    """Test embeddings."""
+    response = es.test_get_embeddings(query)
+    flattened_array = response['img'].flatten()
+    print("Img embedding: ", end="\n")
+    print(', '.join(map(str, flattened_array)), end="\n")
+    print("Text embedding: ", end="\n")
+    flattened_array = response['text'].flatten()
+    print(', '.join(map(str, flattened_array)))
