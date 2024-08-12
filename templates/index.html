@@ -1,21 +1,77 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <form method="POST" action="{{ url_for('handle_search') }}" enctype="multipart/form-data">
-        <div class="input-group mb-3">
-            <input type="text" class="form-control" name="query" id="query" placeholder="Enter your search query" value="{{ query }}" autofocus>
+<div class="row">
+    <div class="col-md-4">
+    <form class="row g-3" method="POST" action="{{ url_for('handle_search') }}" enctype="multipart/form-data">
+        <div class="col-md-4">
+            <label for="gender" class="form-label">Gender</label>
+            <select name="gender" class="form-select">
+              <option value = "" selected>Choose...</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
         </div>
-
-        <div class="input-group mb-3">
-            <input type="file" name="file" class="form-control" id="image_query" aria-describedby="image_query_addon" aria-label="Upload">
-            <button class="btn btn-outline-secondary" type="submit" id="image_query_addon">Submit</button>
-          </div>
+        <div class="col-md-4">
+            <label for="size" class="form-label">Size</label>
+            <select name="size" class="form-select">
+              <option value = "" selected>Choose...</option>
+              <option value="Small">Small</option>
+              <option value="Medium">Medium</option>
+              <option value="Large">Large</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="coat" class="form-label">Coat</label>
+            <select name="coat" class="form-select">
+              <option value = "" selected>Choose...</option>
+              <option value="Short">Short</option>
+              <option value="Medium">Medium</option>
+              <option value="Long">Long</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="age" class="form-label">Age</label>
+            <select name="age" class="form-select" multiple aria-label="Multiple ages">
+                <option value = "" selected>Select age(s)</option>
+                <option value="Kitten">Kitten</option>
+                <option value="Young">Young</option>
+                <option value="Adult">Adult</option>
+                <option value="Senior">Senior</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="breed" class="form-label">Breed</label>
+            <select name="breed" class="form-select" multiple aria-label="Multiple breeds">
+                <option value = "" selected>Select breed(s)</option>
+                <option value="Abyssinian">Abyssinian</option>
+                <option value="American Shorthair">American Shorthair</option>
+                <option value="Calico">Calico</option>
+                <option value="Persian">Persian</option>
+                <option value="Siamese">Siamese</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="inputQuery" class="form-label">Description</label>
+            <input type="text" class="form-control" name="inputQuery" id="inputQuery" placeholder="Enter your search query" value="{{ query }}">
+        </div>
+        <div class="col-md-6">
+            <label for="inputImage" class="form-label">Image</label>
+            <input type="file" name="imageQuery" class="form-control" id="imageQuery" aria-describedby="image_query_addon" aria-label="Upload">
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
     </form>
+    </div>
 
+    <div class="col-md-8">
     {% if filename %}
         <h2>Uploaded Image:</h2>
         <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Uploaded Image">
     {% elif query %}
         <p>{{ query }}</p>
     {% endif %}
+    </div>
+</div>
 {% endblock %}

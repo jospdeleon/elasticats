@@ -15,15 +15,31 @@ def index():
 
 @app.post('/')
 def handle_search():
-    query = request.form.get('query', '')
+    form_data = request.form.to_dict(flat=False)
+    filters = extract_filters(form_data)
+
+    # add text search
+    # add knn text and image if there's a desc
+    # add knn image if there's image
+    # if both desc and image, just do desc
+
+    es.search(
+        query={
+            'bool': {
+                **filters
+            }
+        }
+    )
+
+    query = request.form.get('inputQuery', '')
     # Check if the request has the text part
     if query:
         return render_template('index.html', query=query)
     else:
         # Check if the post request has the file part
-        if 'file' not in request.files:
+        if 'imageQuery' not in request.files:
             return redirect(request.url)
-        file = request.files['file']
+        file = request.files['imageQuery']
         # If the user does not select a file, the browser submits an empty part without filename
         if file.filename == '':
             return redirect(request.url)
@@ -67,3 +83,29 @@ def test_embed(query):
     print("Text embedding: ", end="\n")
     flattened_array = response['text'].flatten()
     print(', '.join(map(str, flattened_array)))
+
+def extract_filters(form_data):
+    filters = []
+
+    for key, val in form_data.items():
+        if (key != "age" and key != "breed"):
+            if (val[0] != ''): #only apply the filter if value is not empty
+                filters.append({
+                    "term": {
+                        f"{key}": {
+                            "value": val[0]
+                        }
+                    },
+                })
+        else:
+            #remove any empty values first
+            cleaned_list = [item for item in val if item]
+
+            if (len(cleaned_list) > 0): #only apply the filter if value is not empty
+                filters.append({
+                    "terms": {
+                        f"{key}": cleaned_list
+                    },
+                })
+    
+    return {'filter': filters}
