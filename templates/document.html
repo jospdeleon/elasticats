@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <p><a href="javascript:history.back(1)" class="btn btn-primary">← Back</a></p>
+    <h2>{{ title }}</h2>
+    <em>
+        Age: {{ document.age }}.
+        Gender: {{ document.gender }}.
+        Size: {{ document.size }}.
+        Coat: {{ document.coat }}.
+        Breed: {{ document.breed }}.
+    </em>
+    <br>
+    {% for paragraph in paragraphs %}
+        <p>{{ paragraph }}</p>
+    {% endfor %}
+
+    <br>
+    <a href="{{ document.url }}" target="_blank" rel="noopener noreferrer">
+        <img src="/static/{{ document.photo }}" class="img-thumbnail" width="400" height="300">
+    </a>
+
+{% endblock %}

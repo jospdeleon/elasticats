@@ -126,8 +126,10 @@ def display_image(filename):
 def get_document(id):
     document = es.retrieve_document(id)
     title = document['_source']['name']
-    paragraphs = document['_source']['content'].split('\n')
-    return render_template('document.html', title=title, paragraphs=paragraphs)
+    paragraphs = document['_source']['summary'].split('\n')
+    document = document['_source']
+    return render_template('document.html', title=title, paragraphs=paragraphs,
+                           document=document)
 
 if __name__ == '__main__':
     # Ensure the upload folder exists
