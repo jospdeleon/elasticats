@@ -1,54 +1,64 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<script>
+    function submitForm() {
+        document.getElementById('myForm').submit();
+    }
+
+    function resetForm() {      
+        window.location.href = "{{ url_for('index') }}" // Redirect to the home page with a GET request
+    }
+</script>
+
 <div class="row">
     <div class="col-md-4">
-    <form class="row g-3" method="POST" action="{{ url_for('handle_search') }}" enctype="multipart/form-data">
+    <form id="myForm" class="row g-3" method="POST" action="{{ url_for('handle_search') }}" enctype="multipart/form-data">
         <div class="col-md-4">
             <label for="gender" class="form-label">Gender</label>
-            <select name="gender" class="form-select">
+            <select name="gender" class="form-select" >
               <option value = "" selected>Choose...</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
+              <option value="Male" {% if form_data and form_data.gender[0] == 'Male' %} selected {% endif %}>Male</option>
+              <option value="Female" {% if form_data and form_data.gender[0] == 'Female' %} selected {% endif %}>Female</option>
             </select>
         </div>
         <div class="col-md-4">
             <label for="size" class="form-label">Size</label>
             <select name="size" class="form-select">
               <option value = "" selected>Choose...</option>
-              <option value="Small">Small</option>
-              <option value="Medium">Medium</option>
-              <option value="Large">Large</option>
+              <option value="Small" {% if form_data and form_data.size[0] == 'Small' %} selected {% endif %}>Small</option>
+              <option value="Medium" {% if form_data and form_data.size[0] == 'Medium' %} selected {% endif %}>Medium</option>
+              <option value="Large" {% if form_data and form_data.size[0] == 'Large' %} selected {% endif %}>Large</option>
             </select>
         </div>
         <div class="col-md-4">
             <label for="coat" class="form-label">Coat</label>
             <select name="coat" class="form-select">
               <option value = "" selected>Choose...</option>
-              <option value="Short">Short</option>
-              <option value="Medium">Medium</option>
-              <option value="Long">Long</option>
+              <option value="Short" {% if form_data and form_data.coat[0] == 'Short' %} selected {% endif %}>Short</option>
+              <option value="Medium" {% if form_data and form_data.coat[0] == 'Medium' %} selected {% endif %}>Medium</option>
+              <option value="Long" {% if form_data and form_data.coat[0] == 'Long' %} selected {% endif %}>Long</option>
             </select>
         </div>
         <div class="col-md-6">
             <label for="age" class="form-label">Age</label>
             <select name="age" class="form-select" multiple aria-label="Multiple ages">
-                <option value = "" selected>Select age(s)</option>
-                <option value="Kitten">Kitten</option>
-                <option value="Young">Young</option>
-                <option value="Adult">Adult</option>
-                <option value="Senior">Senior</option>
+                <option value = "">Select age(s)</option>
+                <option value="Kitten" {% if form_data and 'Kitten' in form_data.age %} selected {% endif %}>Kitten</option>
+                <option value="Young" {% if form_data and 'Young' in form_data.age %} selected {% endif %}>Young</option>
+                <option value="Adult" {% if form_data and 'Adult' in form_data.age %} selected {% endif %}>Adult</option>
+                <option value="Senior" {% if form_data and 'Senior' in form_data.age %} selected {% endif %}>Senior</option>
             </select>
         </div>
         <div class="col-md-6">
             <label for="breed" class="form-label">Breed</label>
             <select name="breed" class="form-select" multiple aria-label="Multiple breeds">
-                <option value = "" selected>Select breed(s)</option>
-                <option value="Abyssinian">Abyssinian</option>
-                <option value="American Shorthair">American Shorthair</option>
-                <option value="Calico">Calico</option>
-                <option value="Persian">Persian</option>
-                <option value="Siamese">Siamese</option>
+                <option value = "">Select breed(s)</option>
+                <option value="Abyssinian" {% if form_data and 'Abyssinian' in form_data.breed %} selected {% endif %}>Abyssinian</option>
+                <option value="American Shorthair" {% if form_data and 'American Shorthair' in form_data.breed %} selected {% endif %}>American Shorthair</option>
+                <option value="Calico" {% if form_data and 'Calico' in form_data.breed %} selected {% endif %}>Calico</option>
+                <option value="Persian" {% if form_data and 'Persian' in form_data.breed %} selected {% endif %}>Persian</option>
+                <option value="Siamese" {% if form_data and 'Siamese' in form_data.breed %} selected {% endif %}>Siamese</option>
             </select>
         </div>
         <div class="col-md-6">
@@ -60,7 +70,11 @@
             <input type="file" name="imageQuery" class="form-control" id="imageQuery" aria-describedby="image_query_addon" aria-label="Upload">
         </div>
         <div class="col-12">
+            {% if results and from_ + results|length < total %}
+            <input type="hidden" name="from_" value="{{ from_ + results|length }}">
+            {% endif %}
             <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="reset" class="btn btn-primary" onclick="resetForm()">Reset</button>
         </div>
     </form>
     </div>
@@ -69,8 +83,44 @@
     {% if filename %}
         <h2>Uploaded Image:</h2>
         <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Uploaded Image">
-    {% elif query %}
-        <p>{{ query }}</p>
+    {% elif results %}
+        <div class="row mb-3">
+            <div class="row mb-3">
+                <div class="col-sm-auto my-auto">
+                    Showing results {{ from_ + 1 }}-{{ from_ + results|length }} out of {{ total }}.
+                </div>
+                {% if from_ > 0 %}
+                    <div class="col-sm-auto my-auto">
+                        <a href="javascript:history.back(1)" class="btn btn-primary">← Previous page</a>
+                    </div>
+                {% endif %}
+                {% if from_ + results|length < total %}
+                    <div class="col-sm-auto my-auto">
+                        <button type="submit" class="btn btn-primary" onclick="submitForm()">Next page →</button>
+                    </div>
+                {% endif %}
+                <div class="col"></div>
+            </div>
+            {% for result in results %}
+                <p>
+                    {{ from_ + loop.index }}. <b><a href="{{ url_for('get_document', id=result._id) }}">{{ result._source.name }}</a></b>
+                    <br>
+                    {{ result._source.summary }}
+                    <br>
+                    <a href="{{ result._source.url }}" target="_blank" rel="noopener noreferrer">
+                        <img src="/static/{{ result._source.photo }}" class="img-thumbnail" width="300" height="200">
+                    </a>
+                    <br>
+                    <small>
+                        Age: {{ result._source.age }}.
+                        Gender: {{ result._source.gender }}.
+                        Size: {{ result._source.size }}.
+                        Coat: {{ result._source.coat }}.
+                        Breed: {{ result._source.breed }}.
+                    </small>
+                </p>
+            {% endfor %}
+        </div>
     {% endif %}
     </div>
 </div>

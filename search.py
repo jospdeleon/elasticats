@@ -72,9 +72,12 @@ class Search:
             }
         )
 
-    def get_img_embedding(self, image_path):
-        temp_image = Image.open("static/" + image_path)
-        return self.img_model.encode(temp_image)
+    def get_img_embedding(self, text='', image_path=''):
+        if text:
+            return self.img_model.encode(text)
+        else: #TODO
+            temp_image = Image.open("static/" + image_path)
+            return self.img_model.encode(temp_image)
 
     def get_text_embedding(self, text):
         return self.text_model.encode(text)
@@ -114,15 +117,19 @@ class Search:
         return {'img': img_emb, 'text': text_emb}
 
     def search(self, **query_args):
+        return self.es.search(index=self.index, **query_args)
+
         # sub_searches is not currently supported in the client, so we send
         # search requests using the body argument
-        if "from_" in query_args:
-            query_args["from"] = query_args["from_"]
-            del query_args["from_"]
-        return self.es.search(
-            index="my_documents",
-            body=json.dumps(query_args),
-        )
+        # if "from_" in query_args:
+        #     query_args["from"] = query_args["from_"]
+        #     del query_args["from_"]
+        # print ("SEARCH")
+        # print(query_args["query"])
+        # return self.es.search(
+        #     index="my_documents",
+        #     body=json.dumps(query_args),
+        # )
 
     def retrieve_document(self, id):
         return self.es.get(index=self.index, id=id)
