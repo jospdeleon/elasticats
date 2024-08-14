@@ -19,16 +19,27 @@ def handle_search():
     form_data = request.form.to_dict(flat=False)
     filters = extract_filters(form_data)
     textQuery = request.form.get('inputQuery', '')
-    # file = request.files['imageQuery']
     from_ = request.form.get('from_', type=int, default=0)
+    imageSearch = False;
+    filename = '';
+
+    if 'imageQuery' in request.files:
+        file = request.files['imageQuery']
+
+        if file:
+            filename = file.filename
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            # Process the image as needed
+            file.save(filepath)
+            imageSearch = True;
+
 
     print (f'FORM_DATA: {form_data}')
-    # print (f'age_list: {age_list}')
-    # print (f'breed_list: {breed_list}')
 
     knn_query = []
 
     # add text search
+    # if both desc and image, just do desc
     if textQuery:
         search_query = {
             'must': {
@@ -43,7 +54,7 @@ def handle_search():
             'field': 'text_embedding',
             'query_vector': es.get_text_embedding(textQuery),
             'k': 5,
-            'num_candidates': 10,
+            'num_candidates': 15,
             **filters,
         })
 
@@ -51,7 +62,17 @@ def handle_search():
             'field': 'img_embedding',
             'query_vector': es.get_img_embedding(textQuery),
             'k': 5,
-            'num_candidates': 10,
+            'num_candidates': 15,
+            **filters,
+        })
+    elif imageSearch:
+        search_query = None
+        # add knn image if there's image
+        knn_query.append({
+            'field': 'img_embedding',
+            'query_vector': es.get_img_embedding(image_path=filepath),
+            'k': 5,
+            'num_candidates': 15,
             **filters,
         })
     else:
@@ -61,58 +82,40 @@ def handle_search():
             }
         }
 
-    # add knn image if there's image
-    # if both desc and image, just do desc
-
     rank = None
-    if len(knn_query) > 0:
+    if len(knn_query) > 0 and search_query:
         rank = {
             'rrf': {}
         }
 
     search_params = {
-        'query': {
-            'bool': {
-                **search_query,
-                **filters
-            }
-        },
         'knn': knn_query,
         'from_': from_,
         'size': 5
     }
+    print (f'# KNN queries: {len(knn_query)}')
+
+    if search_query:
+        search_params['query'] = {
+            'bool': {
+                **search_query,
+                **filters
+            }
+        }
+        print (f'Search query: {search_params['query']}')
 
     # Conditionally add the 'rank' parameter
     if rank:
         search_params['rank'] = rank
 
-    print (f'Search query: {search_params['query']}')
     results = es.search(**search_params)
     print(f'Total results: {results['hits']['total']['value']}')
-
-    # Check if the request has the text part
-    # if textQuery:
-    #     return render_template('index.html', query=textQuery)
-    # else:
-    #     # Check if the post request has the file part
-    #     if 'imageQuery' not in request.files:
-    #         return redirect(request.url)
-    #     file = request.files['imageQuery']
-    #     # If the user does not select a file, the browser submits an empty part without filename
-    #     if file.filename == '':
-    #         return redirect(request.url)
-    #     if file:
-    #         filename = file.filename
-    #         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    #         file.save(filepath)
-    #         # Process the image as needed
-    #         # For demonstration, just display the uploaded image
-    #         return redirect(url_for('display_image', filename=filename))
     
     return render_template('index.html', results=results['hits']['hits'],
                            query=textQuery, from_=from_,
                            total=results['hits']['total']['value'],
-                           form_data=form_data)
+                           form_data=form_data,
+                           filename=filename)
 
 @app.route('/display/<filename>')
 def display_image(filename):
@@ -178,5 +181,5 @@ def extract_filters(form_data):
                         f"{key}": cleaned_list
                     },
                 })
-                
+
     return {'filter': filters}

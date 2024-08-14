@@ -74,9 +74,11 @@ class Search:
 
     def get_img_embedding(self, text='', image_path=''):
         if text:
+            print(f'Encoding text: {text}')
             return self.img_model.encode(text)
-        else: #TODO
-            temp_image = Image.open("static/" + image_path)
+        else:
+            print(f'Encoding image: {image_path}')
+            temp_image = Image.open(image_path)
             return self.img_model.encode(temp_image)
 
     def get_text_embedding(self, text):
@@ -85,7 +87,7 @@ class Search:
     def insert_document(self, document):
         return self.es.index(index=self.index, document={
             **document,
-            'img_embedding': self.get_img_embedding(document['photo']),
+            'img_embedding': self.get_img_embedding(image_path="static/"+document['photo']),
             'text_embedding': self.get_text_embedding(document['summary'])
         })
 
@@ -95,7 +97,7 @@ class Search:
             operations.append({'index': {'_index': self.index}})
             operations.append({
                 **document,
-                'img_embedding': self.get_img_embedding(document['photo']),
+                'img_embedding': self.get_img_embedding(image_path="static/"+document['photo']),
                 'text_embedding': self.get_text_embedding(document['summary'])
             })
         return self.es.bulk(operations=operations)

@@ -77,13 +77,16 @@
             <button type="reset" class="btn btn-primary" onclick="resetForm()">Reset</button>
         </div>
     </form>
+    {% if filename %}
+    <p>
+        <b>Uploaded Image:</b>
+        <img src="{{ url_for('static', filename='uploads/' + filename) }}" width="300" height="200">
+    </p>
+    {% endif %}
     </div>
 
     <div class="col-md-8">
-    {% if filename %}
-        <h2>Uploaded Image:</h2>
-        <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Uploaded Image">
-    {% elif results %}
+    {% if results %}
         <div class="row mb-3">
             <div class="row mb-3">
                 <div class="col-sm-auto my-auto">
