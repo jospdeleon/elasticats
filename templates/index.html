@@ -80,7 +80,7 @@
     {% if filename %}
     <p>
         <b>Uploaded Image:</b>
-        <img src="{{ url_for('static', filename='uploads/' + filename) }}" width="300" height="200">
+        <img src="{{ url_for('static', filename='uploads/' + filename) }}" class="img-thumbnail" width="300" height="200">
     </p>
     {% endif %}
     </div>
