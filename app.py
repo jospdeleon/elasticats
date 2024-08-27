@@ -94,6 +94,7 @@ def handle_search():
         'size': 5
     }
     print (f'# KNN queries: {len(knn_query)}')
+    print (f'KNN QUERIES: {knn_query}')
 
     if search_query:
         search_params['query'] = {
