@@ -163,4 +163,5 @@ cython_debug/
 
 .DS_Store
 
-uploads/
+static/uploads/*
+!static/uploads/.gitkeep
