@@ -64,7 +64,7 @@ Here are some sample tests you can use for the description:
 3. `black cats` with `American shorthair` filter
 4. `white`
 
-For the image, you can try these images stored in the images/<breed> folder:
+For the image, you can try these images stored in the images/`<breed>` folder:
 1. Abyssinian
 - 72245105_3 (Dahlia)
 2. American shorthair
