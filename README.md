@@ -60,7 +60,7 @@ Given the flowchart above, the scenarios you can test are as follows:
 
 Here are some sample tests you can use for the description:
 1. `sisters` vs `siblings`
-2. tuxedo
+2. `tuxedo`
 3. `black cats` with `American shorthair` filter
 4. `white`
 
