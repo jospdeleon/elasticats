@@ -4,6 +4,8 @@ from PIL import Image
 import os
 from search import Search
 import click
+import cohere
+
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/uploads/'
@@ -85,14 +87,16 @@ def handle_search():
     rank = None
     if len(knn_query) > 0 and search_query:
         rank = {
-            'rrf': {}
+            'rrf': {
+            }
         }
-
+        print(f'rank: {rank}')
     search_params = {
         'knn': knn_query,
         'from_': from_,
         'size': 5
     }
+    print(f'rank: {rank}')
     print (f'# KNN queries: {len(knn_query)}')
     print (f'KNN QUERIES: {knn_query}')
 
@@ -103,16 +107,55 @@ def handle_search():
                 **filters
             }
         }
-        print (f'Search query: {search_params['query']}')
+        print (f"Search query: {search_params['query']}")
 
     # Conditionally add the 'rank' parameter
     if rank:
         search_params['rank'] = rank
 
     results = es.search(**search_params)
-    print(f'Total results: {results['hits']['total']['value']}')
-    
-    return render_template('index.html', results=results['hits']['hits'],
+    print(f"Total results: {results['hits']['total']['value']}")
+
+    es.inference.put_model(
+        task_type="rerank",
+        inference_id="cohere_rerank",
+        body={
+            "service": "cohere",
+            "service_settings": {
+                "api_key": "<api_key>>",
+                "model_id": "rerank-english-v3.0"
+            },
+            "task_settings": {
+                "top_n": 10,
+            },
+        }
+    )
+    # Pass the query and the search results to the service
+    response = es.inference.inference(
+        inference_id="cohere_rerank",
+        body={
+            "query": search_query,
+            "input": results['hits']['hits'],
+            "task_settings": {
+                "return_documents": False
+            }
+        }
+    )
+
+    # Reconstruct the input documents based on the index provided in the rereank response
+    ranked_documents = []
+    for document in response.body["rerank"]:
+        ranked_documents.append({
+            "title": raw_documents[int(document["index"])]["_source"]["title"],
+            "text": raw_documents[int(document["index"])]["_source"]["text"]
+        })
+
+    # Print the top 10 results
+    for document in ranked_documents[0:10]:
+        print(f"Title: {document['title']}\nText: {document['text']}\n")
+
+
+    return render_template('index.html', results=ranked_documents['hits']['hits'],
                            query=textQuery, from_=from_,
                            total=results['hits']['total']['value'],
                            form_data=form_data,

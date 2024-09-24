@@ -16,8 +16,8 @@ class Search:
     def __init__(self):        
         self.img_model = SentenceTransformer('clip-ViT-B-32')
         self.text_model = SentenceTransformer('all-MiniLM-L6-v2')
-        self.es = Elasticsearch(cloud_id=os.environ['ELASTIC_CLOUD_ID'],
-                                api_key=os.environ['ELASTIC_API_KEY'])
+        self.es = Elasticsearch(cloud_id="rema-test-deployment:dXMtZWFzdDQuZ2NwLmVsYXN0aWMtY2xvdWQuY29tJDFhOWEyYTkyYzkwOTQ1ZTM5YTQwMzE1YmYzZmFlYjMxJDcwMDExNTFiMjM3YzRmZThhNTEwNDFjMmIzYjdiYWRj",
+                                api_key="R25oRnVKRUJCWkIzNlZFQzBHcmI6aUk1dmU2VmRTNU8xRG9Tc0pCNjhoZw==")
         client_info = self.es.info()
         print('Connected to Elasticsearch!')
         pprint(client_info.body)
@@ -66,8 +66,13 @@ class Search:
                         "type": "keyword"
                     },
                     "breed": {
+                        "type": "keyword",
+                        "copy_to": "tags"
+                    },
+                    "tags": {
                         "type": "keyword"
-                    }
+                   }
+
                 }
             }
         )
