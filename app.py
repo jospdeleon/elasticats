@@ -51,7 +51,7 @@ def handle_search():
 
         # add knn text and image search if there's a description
         knn_query.append({
-            'field': 'text_embedding',
+            'field': 'summary_embedding',
             'query_vector': es.get_text_embedding(textQuery),
             'k': 5,
             'num_candidates': 15,

@@ -49,7 +49,7 @@ class Search:
                     "summary" : {
                         "type" : "text"
                     },
-                    "text_embedding": {
+                    "summary_embedding": {
                         "type": "dense_vector",
                         "dims": 384
                     },
@@ -88,7 +88,7 @@ class Search:
         return self.es.index(index=self.index, document={
             **document,
             'img_embedding': self.get_img_embedding(image_path="static/"+document['photo']),
-            'text_embedding': self.get_text_embedding(document['summary'])
+            'summary_embedding': self.get_text_embedding(document['summary'])
         })
 
     def insert_documents(self, documents):
@@ -98,7 +98,7 @@ class Search:
             operations.append({
                 **document,
                 'img_embedding': self.get_img_embedding(image_path="static/"+document['photo']),
-                'text_embedding': self.get_text_embedding(document['summary'])
+                'summary_embedding': self.get_text_embedding(document['summary'])
             })
         return self.es.bulk(operations=operations)
 
