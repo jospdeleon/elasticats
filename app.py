@@ -103,14 +103,14 @@ def handle_search():
                 **filters
             }
         }
-        print (f'Search query: {search_params['query']}')
+        print (f"Search query: {search_params['query']}")
 
     # Conditionally add the 'rank' parameter
     if rank:
         search_params['rank'] = rank
 
     results = es.search(**search_params)
-    print(f'Total results: {results['hits']['total']['value']}')
+    print(f"Total results: {results['hits']['total']['value']}")
     
     return render_template('index.html', results=results['hits']['hits'],
                            query=textQuery, from_=from_,
